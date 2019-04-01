@@ -18,9 +18,12 @@ class BondSerializer(serializers.HyperlinkedModelSerializer):
 
     def create(self, validated_data):
         instance = super(BondSerializer, self).create(validated_data)
-        lei_api_response = self.session.get(self.lei_api.format(instance.lei))
-        lei_api_response.raise_for_status()
-        legal_name = lei_api_response.json()[0]["Entity"]["LegalName"]["$"]
-        instance.legal_name = legal_name.replace(' ', '')
+        instance.legal_name = self.get_legal_name(instance.lei)
         instance.save()
         return instance
+
+    def get_legal_name(self, lei):
+        lei_api_response = self.session.get(self.lei_api.format(lei))
+        lei_api_response.raise_for_status()
+        legal_name = lei_api_response.json()[0]["Entity"]["LegalName"]["$"]
+        return legal_name.replace(' ', '')

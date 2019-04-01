@@ -7,4 +7,7 @@ class Bond(models.Model):
     currency = models.CharField(max_length=5)
     maturity = models.DateField()
     lei = models.CharField(max_length=20)
-    legal_name = models.CharField(max_length=50)
+    legal_name = models.CharField(max_length=250)
+
+    def __str__(self):
+        return "{}".format(self.legal_name)

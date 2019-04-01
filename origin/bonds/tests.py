@@ -66,25 +66,14 @@ class BondsAPI(APITransactionTestCase):
 
         # Retrieve it
         resp = self.client.get("/bonds/")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        resp_content = json.loads(resp.content.decode("utf-8"))
-        self.assertIsInstance(resp_content, list)
-        self.assertEqual(len(resp_content), 1)
-        self.assertDictEqual(
-            {
-                k: v
-                for k, v in resp_content[0].items()
-                if k != 'url'
-            },
-            {
-                "isin"      : "FR0000131104",
-                "size"      : 100000000,
-                "currency"  : "EUR",
-                "maturity"  : "2025-02-28",
-                "lei"       : "R0MUWSFPU8MPRO8K5P83",
-                "legal_name": "BNPPARIBAS"
-            }
-        )
+        self.make_assertions(resp, {
+            "isin"      : "FR0000131104",
+            "size"      : 100000000,
+            "currency"  : "EUR",
+            "maturity"  : "2025-02-28",
+            "lei"       : "R0MUWSFPU8MPRO8K5P83",
+            "legal_name": "BNPPARIBAS"
+        })
 
     def test_bond_list_filter(self):
         # Create 2 bonds
@@ -107,27 +96,26 @@ class BondsAPI(APITransactionTestCase):
 
         # Retrieve with filter
         resp = self.client.get("/bonds/?legal_name=BNPPARIBAS")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        resp_content = json.loads(resp.content.decode("utf-8"))
-        self.assertIsInstance(resp_content, list)
-        self.assertEqual(len(resp_content), 1)
-        self.assertDictEqual(
-            {
-                k: v
-                for k, v in resp_content[0].items()
-                if k != 'url'
-            },
-            {
-                "isin"      : "FR0000131104",
-                "size"      : 100000000,
-                "currency"  : "EUR",
-                "maturity"  : "2025-02-28",
-                "lei"       : "R0MUWSFPU8MPRO8K5P83",
-                "legal_name": "BNPPARIBAS"
-            }
-        )
+        self.make_assertions(resp, {
+            "isin"      : "FR0000131104",
+            "size"      : 100000000,
+            "currency"  : "EUR",
+            "maturity"  : "2025-02-28",
+            "lei"       : "R0MUWSFPU8MPRO8K5P83",
+            "legal_name": "BNPPARIBAS"
+        })
 
         resp = self.client.get("/bonds/?isin={}".format(bond2["isin"]))
+        self.make_assertions(resp, {
+            "isin"      : "FR0000151105",
+            "size"      : 5000000,
+            "currency"  : "EUR",
+            "maturity"  : "2035-03-30",
+            "lei"       : "969500UOFUIQ6PURHN70",
+            "legal_name": "CREDITAGRICOLECIBTRANSACTIONS"
+        })
+
+    def make_assertions(self, resp, compare_to):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         resp_content = json.loads(resp.content.decode("utf-8"))
         self.assertIsInstance(resp_content, list)
@@ -138,12 +126,5 @@ class BondsAPI(APITransactionTestCase):
                 for k, v in resp_content[0].items()
                 if k != 'url'
             },
-            {
-                "isin"      : "FR0000151105",
-                "size"      : 5000000,
-                "currency"  : "EUR",
-                "maturity"  : "2035-03-30",
-                "lei"       : "969500UOFUIQ6PURHN70",
-                "legal_name": "CREDITAGRICOLECIBTRANSACTIONS"
-            }
+            compare_to
         )
